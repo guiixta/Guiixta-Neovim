@@ -69,3 +69,5 @@ vim.keymap.set('n', '<leader>00', function()
   vim.cmd('echo "Linha copiada para o clipboard!"') -- Exibe uma mensagem customizada
 end, { desc = 'Yank Line to System Clipboard' })
 
+-- Mapeia Shift+Tab no modo de inserção para inserir 4 espaços
+vim.keymap.set('i', '<S-Tab>', '    ', { noremap = true, silent = true })

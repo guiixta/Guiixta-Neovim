@@ -9,7 +9,7 @@ return {
       priority = 1000,
     config = function()
       -- Este comando aplica o tema
-      vim.cmd.colorscheme 'catppuccin'
+     -- vim.cmd.colorscheme 'catppuccin'
     end,
   },
 
@@ -57,17 +57,48 @@ return {
       },
       config = function()
           -- Configuração do Mason (gerenciador de LSP servers)
-          require('mason').setup()
+          require('mason').setup({
+            ensure_installed = {
+                "checkstyle",
+                "pyright", -- Para Python (se você usa)
+                "intelephense", -- Para PHP (se você usa)
+                "bashls", -- Para Shell
+                "html", -- Para HTML
+                "cssls", -- Para CSS
+                "typescript-language-server", -- JS/TS
+                "eslint",-- Para JavaScript/TypeScript
+                "jdtls",
+
+            }
+          })
           require('mason-lspconfig').setup({
-              ensure_installed = {
-                  "pyright", -- Para Python (se você usa)
-                  "intelephense", -- Para PHP (se você usa)
-                  "bashls", -- Para Shell
-                  "html", -- Para HTML
-                  "cssls", -- Para CSS
-                  "ts_ls", -- Para JavaScript/TypeScript
-                  -- Adicione outros LSPs que você usa aqui
-              },
+            function(server_name)
+              lspconfig[server_name].setup({
+                capabilities = capabilities,
+              })
+            end,
+
+        -- Configuração ESPECÍFICA e CORRETA para o ESLint
+            ["eslint"] = function()
+              lspconfig.eslint.setup({
+                capabilities = capabilities,
+                filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+                settings = {
+                    experimental = {
+                        -- ESSA LINHA É CRUCIAL PARA SEU PROJETO
+                        useFlatConfig = true
+                    }
+                },
+              })
+            end,
+
+        -- Configuração ESPECÍFICA e CORRETA para o TypeScript
+        -- Note que o nome aqui é "tsserver", que é o nome que o lspconfig usa.
+            ["tsserver"] = function()
+              lspconfig.tsserver.setup({
+                capabilities = capabilities,
+              })
+            end,
           })
 
           -- Configuração dos LSP Servers específicos
@@ -256,8 +287,12 @@ return {
 
 
   -- Emmet para HTML/CSS
-  { 'mattn/emmet-vim' },
-
+   {
+    'mattn/emmet-vim',
+    config = function()
+      vim.keymap.set('i', '<S-q><leader>', '<Plug>(emmet-expand-abbr)', { noremap = true })
+    end
+  },
   -- nvim-cmp: framework para autocompletar
   {
     'hrsh7th/nvim-cmp',
@@ -398,5 +433,17 @@ return {
     end,
   },
 
+  { "ellisonleao/gruvbox.nvim", 
+    priority = 1000, 
+    config = function()
+      vim.o.background = "dark"
+
+      require("gruvbox").setup({
+        terminal_colors = true,
+        bold = true,
+      })
+      vim.cmd([[colorscheme retrobox]])
+    end,
+  },
 
 }
