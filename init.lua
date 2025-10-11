@@ -1,7 +1,7 @@
 require("config.lazy")
 
 -- Ativar sintaxe colorida (geralmente já vem ativado no Neovim, mas bom garantir)
-vim.cmd('syntax on') -- Ou vim.o.syntax = 'on'
+--vim.cmd('syntax on') -- Ou vim.o.syntax = 'on'
 
 -- Ativar indentação automática
 vim.opt.autoindent = true

@@ -1,6 +1,5 @@
 -- ~/.config/nvim/lua/plugins/init.lua
 -- Este arquivo deve retornar uma tabela de plugins
-
 return { 
   -- Colorscheme (exemplo: Catppuccin)
   {
@@ -13,10 +12,8 @@ return {
     end,
   },
 
-  -- Linhas de indentação (substitui IndentLine)
-  { 'lukas-reineke/indent-blankline.nvim', main = 'ibl', opts = {} },
 
-    -- Explorador de arquivos (substitui NerdTree)
+ -- Explorador de arquivos (substitui NerdTree)
   {
     'nvim-tree/nvim-tree.lua',
     dependencies = {
@@ -46,107 +43,87 @@ return {
   -- lspconfig para analise de errors em linguagens
 
   {
-      'neovim/nvim-lspconfig',
-      dependencies = {
-          'williamboman/mason.nvim', -- Gerenciador de LSP servers
-          'williamboman/mason-lspconfig.nvim', -- Integração Mason com lspconfig
-          'hrsh7th/nvim-cmp', -- Já tem
-          'hrsh7th/cmp-nvim-lsp', -- Já tem
-          'L3MON4D3/LuaSnip', -- Snippets (opcional, mas comum)
-          'saadparwaiz1/cmp_luasnip', -- Integração cmp-lrasnip (opcional)
-      },
-      config = function()
-          -- Configuração do Mason (gerenciador de LSP servers)
-          require('mason').setup({
+    'neovim/nvim-lspconfig',
+    dependencies = {
+        'williamboman/mason.nvim', -- Gerenciador de LSP servers
+        'williamboman/mason-lspconfig.nvim', -- Integração Mason com lspconfig
+        'hrsh7th/nvim-cmp', -- Já tem
+        'hrsh7th/cmp-nvim-lsp', -- Já tem
+        'L3MON4D3/LuaSnip', -- Snippets (opcional, mas comum)
+        'saadparwaiz1/cmp_luasnip', -- Integração cmp-luasnip (opcional)
+    },
+    config = function()
+        -- Configuração do Mason (gerenciador de LSP servers)
+        require('mason').setup({
             ensure_installed = {
                 "checkstyle",
-                "pyright", -- Para Python (se você usa)
-                "intelephense", -- Para PHP (se você usa)
+                "pyright", -- Para Python
+                "intelephense", -- Para PHP
                 "bashls", -- Para Shell
                 "html", -- Para HTML
                 "cssls", -- Para CSS
                 "typescript-language-server", -- JS/TS
-                "eslint",-- Para JavaScript/TypeScript
+                "eslint", -- Para JavaScript/TypeScript
                 "jdtls",
-
             }
-          })
-          require('mason-lspconfig').setup({
-            function(server_name)
-              lspconfig[server_name].setup({
-                capabilities = capabilities,
-              })
-            end,
+        })
 
-        -- Configuração ESPECÍFICA e CORRETA para o ESLint
-            ["eslint"] = function()
-              lspconfig.eslint.setup({
-                capabilities = capabilities,
-                filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
-                settings = {
-                    experimental = {
-                        -- ESSA LINHA É CRUCIAL PARA SEU PROJETO
-                        useFlatConfig = true
-                    }
-                },
-              })
-            end,
+        -- Configuração do Mason-lspconfig
+        local lspconfig = require('lspconfig')
+        local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-        -- Configuração ESPECÍFICA e CORRETA para o TypeScript
-        -- Note que o nome aqui é "tsserver", que é o nome que o lspconfig usa.
-            ["tsserver"] = function()
-              lspconfig.tsserver.setup({
-                capabilities = capabilities,
-              })
-            end,
-          })
+        require('mason-lspconfig').setup({
+            handlers = {
+                -- Configuração padrão para todos os servidores
+                function(server_name)
+                    lspconfig[server_name].setup({
+                        capabilities = capabilities,
+                    })
+                end,
 
-          -- Configuração dos LSP Servers específicos
-          local lspconfig = require('lspconfig')
-          local capabilities = require('cmp_nvim_lsp').default_capabilities()
+                -- Configuração específica para ESLint
+                ["eslint"] = function()
+                    lspconfig.eslint.setup({
+                        capabilities = capabilities,
+                        filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
+                        settings = {
+                            experimental = {
+                                useFlatConfig = true, -- Crucial para projetos com ESLint flat config
+                            },
+                        },
+                    })
+                end,
 
-          -- Exemplo de configuração para Pyright (Python)
-          lspconfig.pyright.setup({
-              capabilities = capabilities,
-              -- Outras configurações específicas do pyright, se necessário
-          })
+                -- Configuração específica para tsserver (TypeScript)
+                ["tsserver"] = function()
+                    lspconfig.tsserver.setup({
+                        capabilities = capabilities,
+                    })
+                end,
+            },
+        })
 
-          -- Exemplo de configuração para Intelephense (PHP)
-          lspconfig.intelephense.setup({
-              capabilities = capabilities,
-              -- Outras configurações específicas do intelephense, se necessário
-          })
+        -- Mapeamentos de teclas para LSP
+        vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to Definition' })
+        vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to Declaration' })
+        vim.keymap.set('n', 'gr', vim.lsp.buf.references, { desc = 'Go to References' })
+        vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = 'Hover Documentation' })
+        vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename Symbol' })
+        vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Code Action' })
+        vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Previous Diagnostic' })
+        vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Next Diagnostic' })
+        vim.keymap.set('n', '<leader>f', vim.lsp.buf.format, { desc = 'Format File' })
 
-          -- Exemplo de configuração para Bash Language Server
-          lspconfig.bashls.setup({
-              capabilities = capabilities,
-          })
-
-          -- Exemplo de configuração para HTML/CSS/TS/JS
-          lspconfig.html.setup({ capabilities = capabilities })
-          lspconfig.cssls.setup({ capabilities = capabilities })
-          lspconfig.ts_ls.setup({ capabilities = capabilities })
-
-          -- Mapeamentos de teclas para LSP (exemplo, você pode ajustar)
-          vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = 'Go to Definition' })
-          vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, { desc = 'Go to Declaration' })
-          vim.keymap.set('n', 'gr', vim.lsp.buf.references, { desc = 'Go to References' })
-          vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = 'Hover Documentation' })
-          vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, { desc = 'Rename Symbol' })
-          vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, { desc = 'Code Action' })
-          vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Previous Diagnostic' })
-          vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Next Diagnostic' })
-          vim.keymap.set('n', '<leader>f', vim.lsp.buf.format, { desc = 'Format File' })
-
-          -- Configuração de como os diagnósticos são exibidos
-          vim.diagnostic.config({
-              virtual_text = true, -- Mostrar erros/avisos ao lado do código
-              signs = true, -- Mostrar ícones na coluna de sinais
-              update_in_insert = false, -- Não atualizar diagnósticos no modo de inserção
-              severity_sort = true, -- Priorizar erros sobre avisos
-          })
-      end
+        -- Configuração de como os diagnósticos são exibidos
+        vim.diagnostic.config({
+            virtual_text = true, -- Mostrar erros/avisos ao lado do código
+            signs = false, -- Mostrar ícones na coluna de sinais
+            update_in_insert = false, -- Não atualizar diagnósticos no modo de inserção
+            severity_sort = true, -- Priorizar erros sobre avisos
+        })
+    end,
   },
+
 
   -- bufferline
   {
@@ -433,6 +410,35 @@ return {
     end,
   },
 
+
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate", -- Atualiza os parsers automaticamente
+    config = function()
+        require("nvim-treesitter.configs").setup({
+            ensure_installed = { "python", "javascript", "typescript", "html", "css", "bash" }, -- Instala o parser para Python
+            highlight = {
+                enable = true, -- Ativa o realce de sintaxe
+                additional_vim_regex_highlighting = false, -- Desativa regex antigo para evitar conflitos
+            },
+            indent = { enable = true }, -- Melhora indentação automática (opcional)
+        })
+    end,
+  },
+
+  {
+    "m-demare/hlargs.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter" }, -- Requer treesitter
+    config = function()
+        require("hlargs").setup({
+            -- Configurações opcionais (pode deixar vazio para padrão)
+            color = "#ff5555", -- Cor personalizada para argumentos (opcional, use cores distintas)
+            enable = true, -- Ativa o plugin
+            excluded_filetypes = {}, -- Arquivos onde o hlargs não será usado
+        })
+    end,
+  },
+
   { "ellisonleao/gruvbox.nvim", 
     priority = 1000, 
     config = function()
@@ -442,7 +448,7 @@ return {
         terminal_colors = true,
         bold = true,
       })
-      vim.cmd([[colorscheme retrobox]])
+      vim.cmd([[colorscheme catppuccin]])
     end,
   },
 
