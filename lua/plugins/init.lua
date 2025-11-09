@@ -448,8 +448,17 @@ return {
         terminal_colors = true,
         bold = true,
       })
-      vim.cmd([[colorscheme catppuccin]])
+      vim.cmd([[colorscheme everforest]])
     end,
   },
+
+  {
+    "sainnhe/everforest",
+    name = "everforest",
+    priority = 1000, -- Garante que ele carregue primeiro
+    config = function()
+      vim.g.everforest_background = 'hard'
+    end,
+  }
 
 }
