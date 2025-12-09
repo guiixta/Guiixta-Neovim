@@ -56,15 +56,16 @@ return {
         -- Configuração do Mason (gerenciador de LSP servers)
         require('mason').setup({
             ensure_installed = {
-                "checkstyle",
                 "pyright", -- Para Python
                 "intelephense", -- Para PHP
                 "bashls", -- Para Shell
                 "html", -- Para HTML
                 "cssls", -- Para CSS
-                "typescript-language-server", -- JS/TS
-                "eslint", -- Para JavaScript/TypeScript
+                "ts_ls",
+                "ts_standard", -- JS/TS
+                "eslint_d", -- Para JavaScript/TypeScript
                 "jdtls",
+                "jsonls"
             }
         })
 
@@ -82,22 +83,20 @@ return {
                 end,
 
                 -- Configuração específica para ESLint
-                ["eslint"] = function()
-                    lspconfig.eslint.setup({
+                ["lua_ls"] = function()
+                    lspconfig.lua_ls.setup({
                         capabilities = capabilities,
-                        filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
                         settings = {
-                            experimental = {
-                                useFlatConfig = true, -- Crucial para projetos com ESLint flat config
+                            Lua = {
+                                runtime = { version = 'LuaJIT' },
+                                diagnostics = {
+                                    globals = { 'vim' },
+                                },
+                                workspace = {
+                                    library = vim.api.nvim_get_runtime_file("", true),
+                                },
                             },
                         },
-                    })
-                end,
-
-                -- Configuração específica para tsserver (TypeScript)
-                ["tsserver"] = function()
-                    lspconfig.tsserver.setup({
-                        capabilities = capabilities,
                     })
                 end,
             },
@@ -302,32 +301,6 @@ return {
           { name = 'buffer' },
           { name = 'path' },
         })
-      })
-    end
-  },
-  -- Nvim-lint: para linters que não são LSP (substitui partes do Vim-ALE)
-  {
-    'mfussenegger/nvim-lint',
-    config = function()
-      local lint = require('lint')
-      local eslint_d_definition = vim.deepcopy(lint.linters.eslint_d)
-
-      eslint_d_definition.cmd = 'npx'
-      table.insert(eslint_d_definition.args, 1, 'eslint_d')
-
-      lint.linters.npx_eslint_d = eslint_d_definition
-
-      lint.linters_by_ft = {
-        javascript = {'npx_eslint_d'},
-        typescript = {'npx_eslint_d'},
-        javascriptreact = {'npx_eslint_d'},
-        typescriptreact = {'npx_eslint_d'},
-      }
-      -- Autocmd para rodar o linter ao salvar
-      vim.api.nvim_create_autocmd({ "BufWritePost" }, {
-        callback = function()
-          require("lint").try_lint()
-        end,
       })
     end
   },
